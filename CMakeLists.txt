@@ -12,4 +12,6 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_subdirectory(submodules/juce)
+add_subdirectory(submodules/gtest)
 add_subdirectory(source)
+add_subdirectory(tests)

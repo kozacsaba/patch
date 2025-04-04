@@ -17,15 +17,15 @@ juce_add_plugin(${PREDEF_PROJECT_NAME}
     BUNDLE_ID "com.Csaba_Koza.${PREDEF_PROJECT_NAME}"
 )
 
-target_include_directories(Patch PRIVATE 
-                           ${CMAKE_SOURCE_DIR}/src)
+target_include_directories(Patch PUBLIC
+                           ${CMAKE_SOURCE_DIR}/source)
 
-target_sources(Patch PRIVATE
+target_sources(Patch PUBLIC
     PluginProcessor.cpp
     PluginEditor.cpp
     )
 
-target_compile_definitions(Patch PRIVATE
+target_compile_definitions(Patch PUBLIC
     JUCE_WEB_BROWSER=0  # If you remove this, add `NEEDS_WEB_BROWSER TRUE` to the `juce_add_gui_app` call
     JUCE_USE_CURL=0     # If you remove this, add `NEEDS_CURL TRUE` to the `juce_add_gui_app` call
     JUCE_APPLICATION_NAME_STRING="$<TARGET_PROPERTY:${PREDEF_PROJECT_NAME},JUCE_PRODUCT_NAME>"
