@@ -10,7 +10,7 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     mModeSelector.addItem("Send", (int)patch::Mode::send);
     mModeSelector.addItem("Recieve", (int)patch::Mode::recieve);
     mModeSelector.setEditableText(false);
-    mModeSelector.setSelectedId((int)patch::Mode::bypass, false);
+    mModeSelector.setSelectedId((int)patch::Mode::bypass, juce::dontSendNotification);
     mModeSelector.onChange = [this]()
     {
         processorRef.getEndPoint()->setMode(

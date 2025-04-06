@@ -7,11 +7,14 @@
 #include <tuple>
 #include <juce_audio_basics/juce_audio_basics.h>
 
+#include "CircularArray.h"
 #include "Singleton.h"
 #include "Instance.h"
 
 namespace patch
 {
+    class Instance;
+
     // there are way better methods to do this, but atm im just trying to get
     // it to work somehow
     struct MCCBuffer
@@ -23,8 +26,8 @@ namespace patch
             mNumberOfChannels = numberOfChannels;
             mNumberOfSamples = numberOfSamples;
 
-            buffers.reserve(numberOfChannels);
-            for(int i = 0; i < numberOfChannels; i++)
+            buffers.reserve((size_t)numberOfChannels);
+            for(size_t i = 0; i < (size_t)numberOfChannels; i++)
             {
                 buffers[i] = std::make_unique<CircularArray<float>>(numberOfSamples);
                 buffers[i]->reset();
@@ -36,7 +39,7 @@ namespace patch
             if (channelNumber >= mNumberOfChannels) return nullptr;
             if (channelNumber < 0) return nullptr;
 
-            return buffers[channelNumber].get();
+            return buffers[(size_t)channelNumber].get();
         }
 
         inline int getNumberOfChannels() const { return mNumberOfChannels; }

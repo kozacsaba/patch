@@ -29,6 +29,9 @@ target_include_directories(Patch PUBLIC
 target_sources(Patch PUBLIC
     PluginProcessor.cpp
     PluginEditor.cpp
+
+    Core.cpp
+    Instance.cpp
     )
 
 target_compile_definitions(Patch PUBLIC

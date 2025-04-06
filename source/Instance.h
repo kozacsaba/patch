@@ -24,6 +24,8 @@ namespace patch
         hasNotFinished = false
     };
 
+    class Core;
+
     class Instance
     {
     public:

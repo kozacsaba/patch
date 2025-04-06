@@ -9,11 +9,11 @@ void Core::registerInstance(Instance* ptr)
 
 void Core::tryDeleteInstance(Instance* ptr)
 {
-    for (int i = 0; i < mInstances.size(); i++)
+    for (size_t i = 0; i < mInstances.size(); i++)
     {
         if (mInstances[i] == ptr)
         {
-            mInstances.erase(mInstances.begin() + i);
+            mInstances.erase(mInstances.begin() + (int)i);
             return;
         }
     }
