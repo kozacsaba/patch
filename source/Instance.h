@@ -13,7 +13,7 @@ namespace patch
     // this too should probably be reworked later
     enum class Mode : int
     {
-        bypass = 0,
+        bypass = 1,
         send,
         recieve
     };

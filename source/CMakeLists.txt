@@ -10,7 +10,6 @@ juce_add_plugin(${PREDEF_PROJECT_NAME}
     PRODUCT_NAME "${PREDEF_PROJECT_NAME}"
     COMPANY_NAME "Csaba Koza"
     FORMATS 
-        Standalone
         VST3
     PLUGIN_NAME "${PREDEF_PROJECT_NAME}"
     IS_SYNTH FALSE

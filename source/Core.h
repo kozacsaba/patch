@@ -26,11 +26,13 @@ namespace patch
             mNumberOfChannels = numberOfChannels;
             mNumberOfSamples = numberOfSamples;
 
+            buffers.clear();
             buffers.reserve((size_t)numberOfChannels);
             for(size_t i = 0; i < (size_t)numberOfChannels; i++)
             {
-                buffers[i] = std::make_unique<CircularArray<float>>(numberOfSamples);
-                buffers[i]->reset();
+                auto channel = std::make_unique<CircularArray<float>>(numberOfSamples);
+                buffers.push_back(std::move(channel));
+                buffers.back()->reset();
             }
         }
 

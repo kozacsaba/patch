@@ -33,5 +33,6 @@ void PluginEditor::paint (juce::Graphics& g)
 
 void PluginEditor::resized()
 {
-    mModeSelector.setBounds(getLocalBounds());
+    auto area = getBounds();
+    mModeSelector.setBounds(area);
 }
