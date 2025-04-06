@@ -12,30 +12,65 @@
 
 namespace patch
 {
-    struct InstanceReg
+    // there are way better methods to do this, but atm im just trying to get
+    // it to work somehow
+    struct MCCBuffer
+    // Multi Channel Circular Buffer
     {
-        int id;
-        std::unique_ptr<Instance> ptr;
-        bool hasRanProcess;
+    public:
+        void setSize(int numberOfChannels, int numberOfSamples)
+        {
+            mNumberOfChannels = numberOfChannels;
+            mNumberOfSamples = numberOfSamples;
+
+            buffers.reserve(numberOfChannels);
+            for(int i = 0; i < numberOfChannels; i++)
+            {
+                buffers[i] = std::make_unique<CircularArray<float>>(numberOfSamples);
+                buffers[i]->reset();
+            }
+        }
+
+        CircularArray<float>* getChannel(int channelNumber) const
+        {
+            if (channelNumber >= mNumberOfChannels) return nullptr;
+            if (channelNumber < 0) return nullptr;
+
+            return buffers[channelNumber].get();
+        }
+
+        int getNumberOfChannels() const { return mNumberOfChannels; }
+        int getNumberOfSamples() const { return mNumberOfSamples; }
+
+    private:
+        std::vector<std::unique_ptr<CircularArray<float>>> buffers;
+        int mNumberOfChannels;
+        int mNumberOfSamples;
     };
 
     class Core : public Singleton<Core>
     {
     public:
-        Instance* makeNewInstance();
+        void registerInstance(Instance* ptr);
         void tryDeleteInstance(Instance* ptr);
 
         void prepareToPlay(double sampleRate, int samplesPerBlock);
-        bool processRouting();
+        void processRouting(int incomingSize);
         void releaseResources();
 
+        void bufferForNextBlock(juce::AudioBuffer<float>& buffer);
+
     private:
-        std::vector<InstanceReg> mInstances;
+        std::vector<Instance*> mInstances;
+
+        int mMaxBufferSize;
+        double mSampleRate;
+        int mTransitLength = 0;
 
         // im not sure just yet how this is going to work, but this buffer is a
         // temporary for sure
-        juce::AudioBuffer<float> mSend;
+        juce::AudioBuffer<float> mTransitBuffer;
+        MCCBuffer mDelayBuffer;
     };
-
 
 }

@@ -2,6 +2,10 @@
 
 # juce_set_vst2_sdk_path(...)
 
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 juce_add_plugin(${PREDEF_PROJECT_NAME}
     PRODUCT_NAME "${PREDEF_PROJECT_NAME}"
     COMPANY_NAME "Csaba Koza"
@@ -16,6 +20,8 @@ juce_add_plugin(${PREDEF_PROJECT_NAME}
         Fx
     BUNDLE_ID "com.Csaba_Koza.${PREDEF_PROJECT_NAME}"
 )
+
+target_compile_features(Patch PUBLIC cxx_std_20)
 
 target_include_directories(Patch PUBLIC
                            ${CMAKE_SOURCE_DIR}/source)
@@ -47,5 +53,3 @@ target_link_libraries(Patch PUBLIC
     juce::juce_recommended_warning_flags
     juce::juce_recommended_lto_flags
 )
-
-target_compile_features(Patch PUBLIC cxx_std_20)

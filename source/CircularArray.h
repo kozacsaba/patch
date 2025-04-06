@@ -8,7 +8,6 @@
 
 namespace patch
 {
-
 template <typename T>
 concept Number = std::is_integral_v<T> ||
                  std::is_floating_point_v<T>;
@@ -53,23 +52,23 @@ public:
         mIndex %= mSize;
         return pop;
     }
-    type operator[](size_t index)
+    [[explicit]] type operator[](size_t index)
     {
         size_t virtualIndex = mIndex + index;
         virtualIndex %= mSize;
         return mData[virtualIndex];
     }
-    const type operator[](size_t index) const
+    [[explicit]] const type operator[](size_t index) const
     {
         size_t virtualIndex = mIndex + index;
         virtualIndex %= mSize;
         return mData[virtualIndex];
     }
-    type operator[](ptrdiff_t index)
+    [[explicit]] type operator[](ptrdiff_t index)
     { 
         return (*this)[(size_t) index];
     }
-    const type operator[](ptrdiff_t index) const
+    [[explicit]] const type operator[](ptrdiff_t index) const
     {
         return (*this)[(size_t) index];
     }

@@ -6,6 +6,7 @@
 #pragma once
 
 #include "Core.h"
+#include "CircularArray.h"
 
 namespace patch
 {
@@ -17,6 +18,12 @@ namespace patch
         recieve
     };
 
+    enum BinarySateFlag : bool
+    {
+        hasFinished = true,
+        hasNotFinished = false
+    };
+
     class Instance
     {
     public:
@@ -24,14 +31,22 @@ namespace patch
         ~Instance();
 
         void prepareToPlay(double sampleRate, int samplesPerBlock);
-        void processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midi);
+        void processBlock (juce::AudioBuffer<float>& buffer);
         void releaseResources();
 
         void setMode(Mode mode);
         Mode getMode() { return mMode; }
+        juce::AudioBuffer<float>* getRecieveBuffer() { return &mRecieveBuffer; }
+        void coreFinished() { fCoreState = hasFinished; }
 
     private:
+        int maxBufferSize;
+        double fs;
+        BinarySateFlag fCoreState = hasNotFinished;
+
         Mode mMode;
+        juce::AudioBuffer<float> mRecieveBuffer;
+        Core* mCorePtr;
     };
 
 }
