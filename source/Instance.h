@@ -11,9 +11,9 @@
 namespace patch
 {
     // this too should probably be reworked later
-    enum class Mode
+    enum class Mode : int
     {
-        bypass,
+        bypass = 1,
         send,
         recieve
     };
@@ -23,6 +23,8 @@ namespace patch
         hasFinished = true,
         hasNotFinished = false
     };
+
+    class Core;
 
     class Instance
     {
@@ -38,6 +40,7 @@ namespace patch
         Mode getMode() { return mMode; }
         juce::AudioBuffer<float>* getRecieveBuffer() { return &mRecieveBuffer; }
         void coreFinished() { fCoreState = hasFinished; }
+        int getId() const { return id; }
 
     private:
         int maxBufferSize;
@@ -47,6 +50,11 @@ namespace patch
         Mode mMode;
         juce::AudioBuffer<float> mRecieveBuffer;
         Core* mCorePtr;
+
+        inline static int gCounter = 1;
+        const int id;
+
+        inline static juce::CriticalSection mcs = {};
     };
 
 }

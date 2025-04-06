@@ -1,5 +1,7 @@
 # Plugin #######################################################################
 
+message(STATUS "### Configuring Plugin ###")
+
 # juce_set_vst2_sdk_path(...)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -10,7 +12,6 @@ juce_add_plugin(${PREDEF_PROJECT_NAME}
     PRODUCT_NAME "${PREDEF_PROJECT_NAME}"
     COMPANY_NAME "Csaba Koza"
     FORMATS 
-        Standalone
         VST3
     PLUGIN_NAME "${PREDEF_PROJECT_NAME}"
     IS_SYNTH FALSE
@@ -29,6 +30,10 @@ target_include_directories(Patch PUBLIC
 target_sources(Patch PUBLIC
     PluginProcessor.cpp
     PluginEditor.cpp
+
+    Core.cpp
+    Instance.cpp
+    Logger.cpp
     )
 
 target_compile_definitions(Patch PUBLIC

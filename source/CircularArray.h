@@ -52,23 +52,23 @@ public:
         mIndex %= mSize;
         return pop;
     }
-    [[explicit]] type operator[](size_t index)
+    type operator[](size_t index)
     {
         size_t virtualIndex = mIndex + index;
         virtualIndex %= mSize;
         return mData[virtualIndex];
     }
-    [[explicit]] const type operator[](size_t index) const
+    const type operator[](size_t index) const
     {
         size_t virtualIndex = mIndex + index;
         virtualIndex %= mSize;
         return mData[virtualIndex];
     }
-    [[explicit]] type operator[](ptrdiff_t index)
+    type operator[](ptrdiff_t index)
     { 
         return (*this)[(size_t) index];
     }
-    [[explicit]] const type operator[](ptrdiff_t index) const
+    const type operator[](ptrdiff_t index) const
     {
         return (*this)[(size_t) index];
     }

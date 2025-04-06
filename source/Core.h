@@ -7,40 +7,45 @@
 #include <tuple>
 #include <juce_audio_basics/juce_audio_basics.h>
 
+#include "CircularArray.h"
 #include "Singleton.h"
 #include "Instance.h"
 
 namespace patch
 {
+    class Instance;
+
     // there are way better methods to do this, but atm im just trying to get
     // it to work somehow
     struct MCCBuffer
     // Multi Channel Circular Buffer
     {
     public:
-        void setSize(int numberOfChannels, int numberOfSamples)
+        inline void setSize(int numberOfChannels, int numberOfSamples)
         {
             mNumberOfChannels = numberOfChannels;
             mNumberOfSamples = numberOfSamples;
 
-            buffers.reserve(numberOfChannels);
-            for(int i = 0; i < numberOfChannels; i++)
+            buffers.clear();
+            buffers.reserve((size_t)numberOfChannels);
+            for(size_t i = 0; i < (size_t)numberOfChannels; i++)
             {
-                buffers[i] = std::make_unique<CircularArray<float>>(numberOfSamples);
-                buffers[i]->reset();
+                auto channel = std::make_unique<CircularArray<float>>(numberOfSamples);
+                buffers.push_back(std::move(channel));
+                buffers.back()->reset();
             }
         }
 
-        CircularArray<float>* getChannel(int channelNumber) const
+        inline CircularArray<float>* getChannel(int channelNumber) const
         {
             if (channelNumber >= mNumberOfChannels) return nullptr;
             if (channelNumber < 0) return nullptr;
 
-            return buffers[channelNumber].get();
+            return buffers[(size_t)channelNumber].get();
         }
 
-        int getNumberOfChannels() const { return mNumberOfChannels; }
-        int getNumberOfSamples() const { return mNumberOfSamples; }
+        inline int getNumberOfChannels() const { return mNumberOfChannels; }
+        inline int getNumberOfSamples() const { return mNumberOfSamples; }
 
     private:
         std::vector<std::unique_ptr<CircularArray<float>>> buffers;
