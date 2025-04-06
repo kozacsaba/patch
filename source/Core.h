@@ -18,7 +18,7 @@ namespace patch
     // Multi Channel Circular Buffer
     {
     public:
-        void setSize(int numberOfChannels, int numberOfSamples)
+        inline void setSize(int numberOfChannels, int numberOfSamples)
         {
             mNumberOfChannels = numberOfChannels;
             mNumberOfSamples = numberOfSamples;
@@ -31,7 +31,7 @@ namespace patch
             }
         }
 
-        CircularArray<float>* getChannel(int channelNumber) const
+        inline CircularArray<float>* getChannel(int channelNumber) const
         {
             if (channelNumber >= mNumberOfChannels) return nullptr;
             if (channelNumber < 0) return nullptr;
@@ -39,8 +39,8 @@ namespace patch
             return buffers[channelNumber].get();
         }
 
-        int getNumberOfChannels() const { return mNumberOfChannels; }
-        int getNumberOfSamples() const { return mNumberOfSamples; }
+        inline int getNumberOfChannels() const { return mNumberOfChannels; }
+        inline int getNumberOfSamples() const { return mNumberOfSamples; }
 
     private:
         std::vector<std::unique_ptr<CircularArray<float>>> buffers;

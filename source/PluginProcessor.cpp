@@ -2,12 +2,12 @@
 #include "PluginEditor.h"
 
 PluginProcessor::PluginProcessor()
-     : AudioProcessor (BusesProperties()
-                       .withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
-                       .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
-                       )
-{
-}
+    : AudioProcessor (BusesProperties()
+                      .withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
+                      .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
+                      )
+    , mEndpoint(std::make_unique<patch::Instance>())
+{}
 PluginProcessor::~PluginProcessor()
 {
 }
@@ -35,17 +35,19 @@ void PluginProcessor::changeProgramName (int index, const juce::String& newName)
 
 void PluginProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    juce::ignoreUnused (sampleRate, samplesPerBlock);
+    mEndpoint->prepareToPlay(sampleRate, samplesPerBlock);
 }
 
 void PluginProcessor::releaseResources()
 {
+    mEndpoint->releaseResources();
 }
 
 bool PluginProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
-    if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono()
-        && layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
+    // this version only supports 2 channel stereo
+    if (//layouts.getMainOutputChannelSet() != juce::AudioChannelSet::mono() &&
+        layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
         return false;
     return true;
 }
@@ -57,7 +59,7 @@ void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 
     juce::ScopedNoDenormals noDenormals;
 
-    // call core from here
+    mEndpoint->processBlock(buffer);
 }
 
 

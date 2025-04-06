@@ -1,7 +1,7 @@
 #pragma once
 
 #include <juce_audio_processors/juce_audio_processors.h>
-
+#include "Instance.h"
 
 class PluginProcessor final : public juce::AudioProcessor
 {
@@ -31,6 +31,9 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
+    patch::Instance* getEndPoint() { return mEndpoint.get(); }
 private:
+    std::unique_ptr<patch::Instance> mEndpoint;
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginProcessor)
 };

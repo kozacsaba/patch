@@ -11,9 +11,9 @@
 namespace patch
 {
     // this too should probably be reworked later
-    enum class Mode
+    enum class Mode : int
     {
-        bypass,
+        bypass = 0,
         send,
         recieve
     };

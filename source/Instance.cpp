@@ -7,7 +7,9 @@ Instance::Instance()
     , fs(0)
     , mMode(Mode::bypass)
     , mCorePtr(Core::getInstance())
-{}
+{
+    mCorePtr->registerInstance(this);
+}
 
 Instance::~Instance() 
 {
@@ -56,4 +58,9 @@ void Instance::processBlock(juce::AudioBuffer<float>& buffer)
     }
     
     fCoreState = hasNotFinished;
+}
+
+void Instance::setMode(Mode mode)
+{
+    mMode = mode;
 }
