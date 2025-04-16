@@ -1,5 +1,7 @@
 # Plugin #######################################################################
 
+message(STATUS "### Configuring Plugin ###")
+
 # juce_set_vst2_sdk_path(...)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -31,6 +33,7 @@ target_sources(Patch PUBLIC
 
     Core.cpp
     Instance.cpp
+    Logger.cpp
     )
 
 target_compile_definitions(Patch PUBLIC

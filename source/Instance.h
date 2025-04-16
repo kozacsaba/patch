@@ -40,6 +40,7 @@ namespace patch
         Mode getMode() { return mMode; }
         juce::AudioBuffer<float>* getRecieveBuffer() { return &mRecieveBuffer; }
         void coreFinished() { fCoreState = hasFinished; }
+        int getId() const { return id; }
 
     private:
         int maxBufferSize;
@@ -49,6 +50,9 @@ namespace patch
         Mode mMode;
         juce::AudioBuffer<float> mRecieveBuffer;
         Core* mCorePtr;
+
+        inline static int gCounter = 1;
+        const int id;
     };
 
 }
