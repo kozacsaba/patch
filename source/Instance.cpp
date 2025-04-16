@@ -1,4 +1,5 @@
 #include "Instance.h"
+#include "Logger.h"
 
 using namespace patch;
 
@@ -7,6 +8,7 @@ Instance::Instance()
     , fs(0)
     , mMode(Mode::bypass)
     , mCorePtr(Core::getInstance())
+    , id(gCounter++)
 {
     mCorePtr->registerInstance(this);
 }
@@ -36,16 +38,24 @@ void Instance::processBlock(juce::AudioBuffer<float>& buffer)
 {
     if (fCoreState == hasNotFinished) 
     {
+        MY_LOG_INFO ("Inst {}: Calling Core =========================",
+                     id);
         mCorePtr->processRouting(buffer.getNumSamples());
     }
 
     if (mMode == Mode::send)
     {
+        MY_LOG_INFO ("Inst {}: Sending buffer of size {}", 
+                     id,
+                     buffer.getNumSamples());
         mCorePtr->bufferForNextBlock(buffer);
         buffer.clear();
     }
     else if (mMode == Mode::recieve)
     {
+        MY_LOG_INFO ("Inst {}: Loading buffer of size {}", 
+                     id,
+                     buffer.getNumSamples());
         for (int ch = 0; ch < 2; ch++)
         {
             buffer.copyFrom (
