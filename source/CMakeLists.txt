@@ -1,12 +1,17 @@
 # Plugin #######################################################################
 
+message(STATUS "### Configuring Plugin ###")
+
 # juce_set_vst2_sdk_path(...)
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 juce_add_plugin(${PREDEF_PROJECT_NAME}
     PRODUCT_NAME "${PREDEF_PROJECT_NAME}"
     COMPANY_NAME "Csaba Koza"
     FORMATS 
-        Standalone
         VST3
     PLUGIN_NAME "${PREDEF_PROJECT_NAME}"
     IS_SYNTH FALSE
@@ -17,15 +22,21 @@ juce_add_plugin(${PREDEF_PROJECT_NAME}
     BUNDLE_ID "com.Csaba_Koza.${PREDEF_PROJECT_NAME}"
 )
 
-target_include_directories(Patch PRIVATE 
-                           ${CMAKE_SOURCE_DIR}/src)
+target_compile_features(Patch PUBLIC cxx_std_20)
 
-target_sources(Patch PRIVATE
+target_include_directories(Patch PUBLIC
+                           ${CMAKE_SOURCE_DIR}/source)
+
+target_sources(Patch PUBLIC
     PluginProcessor.cpp
     PluginEditor.cpp
+
+    Core.cpp
+    Instance.cpp
+    Logger.cpp
     )
 
-target_compile_definitions(Patch PRIVATE
+target_compile_definitions(Patch PUBLIC
     JUCE_WEB_BROWSER=0  # If you remove this, add `NEEDS_WEB_BROWSER TRUE` to the `juce_add_gui_app` call
     JUCE_USE_CURL=0     # If you remove this, add `NEEDS_CURL TRUE` to the `juce_add_gui_app` call
     JUCE_APPLICATION_NAME_STRING="$<TARGET_PROPERTY:${PREDEF_PROJECT_NAME},JUCE_PRODUCT_NAME>"
@@ -47,5 +58,3 @@ target_link_libraries(Patch PUBLIC
     juce::juce_recommended_warning_flags
     juce::juce_recommended_lto_flags
 )
-
-target_compile_features(Patch PUBLIC cxx_std_20)

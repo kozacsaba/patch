@@ -10,6 +10,17 @@ project("${PREDEF_PROJECT_NAME}_Project" VERSION ${PREDEF_PROJECT_VERSION})
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_subdirectory(submodules/juce)
+add_subdirectory(submodules/gtest)
 add_subdirectory(source)
+add_subdirectory(tests)
+
+message(STATUS "### Definitions ###")
+
+target_compile_definitions(${PREDEF_PROJECT_NAME} PUBLIC
+    PROJECT_ROOT_DIR="${PROJECT_ROOT}"
+)
+
+message(STATUS "Project root directory is set to ${PROJECT_ROOT}")
