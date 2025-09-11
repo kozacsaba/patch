@@ -1,13 +1,16 @@
 ## DELETE THIS FILE BEFORE MERGING INTO DEVELOP
 
------------------------------------------------
+--------------------------------------------------------------------------------
 
 ### Goals
 
-- [ ] Add UIDs to instances
+- [ ] Add UUIDs to instances
 - [ ] register instances with UIDs
-- [ ] presets __SHOULD NOT__ save or load IDs presets should only save / load
-      parameters, except when loading a project...
+- [ ] UUIDs will be saved in the preset / StateInfo.
+- [ ] on state info load, the uuid will be overwritten and all connecitons will
+      be inherited
+- [ ] connecitons should be stored in the preset and registered in the core on
+      load. dangling connections are ignored
 - [ ] the core should keep three lists, that will contain all instances. one for
       transmitters, one for recievers, one for bystanders
 - [ ] the core should keep a matrix of sends routing transmitters to recievers,
