@@ -7,7 +7,7 @@ PluginEditor::PluginEditor (PluginProcessor& p)
 {
     addAndMakeVisible(mModeSelector);
     mModeSelector.addItem("Bypass", (int)patch::Mode::bypass);
-    mModeSelector.addItem("Send", (int)patch::Mode::send);
+    mModeSelector.addItem("Send", (int)patch::Mode::transmit);
     mModeSelector.addItem("Recieve", (int)patch::Mode::recieve);
     mModeSelector.setEditableText(false);
     mModeSelector.setSelectedId(

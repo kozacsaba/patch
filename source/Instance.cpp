@@ -7,15 +7,16 @@ Instance::Instance()
     : maxBufferSize(0)
     , fs(0)
     , mMode(Mode::bypass)
+    , mPreviousMode(Mode::bypass)
     , mCorePtr(Core::getInstance())
-    , id(gCounter++)
+    , id()
 {
     mCorePtr->registerInstance(this);
 }
 
 Instance::~Instance() 
 {
-    mCorePtr->tryDeleteInstance(this);
+    mCorePtr->tryDeleteInstance(getId());
 }
 
 
@@ -45,12 +46,12 @@ void Instance::processBlock(juce::AudioBuffer<float>& buffer)
         mCorePtr->processRouting(buffer.getNumSamples());
     }
 
-    if (mMode == Mode::send)
+    if (mMode == Mode::transmit)
     {
         MY_LOG_INFO ("Inst {}: Sending buffer of size {}", 
                      id,
                      buffer.getNumSamples());
-        mCorePtr->bufferForNextBlock(buffer);
+        mCorePtr->bufferForNextBlock(getId(), buffer);
         buffer.clear();
     }
     else if (mMode == Mode::recieve)
@@ -75,4 +76,6 @@ void Instance::processBlock(juce::AudioBuffer<float>& buffer)
 void Instance::setMode(Mode mode)
 {
     mMode = mode;
+    mCorePtr->instanceSwitchedMode(this, mPreviousMode);
+    mPreviousMode = mMode;
 }

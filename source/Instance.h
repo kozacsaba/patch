@@ -14,7 +14,7 @@ namespace patch
     enum class Mode : int
     {
         bypass = 1,
-        send,
+        transmit,
         recieve
     };
 
@@ -25,6 +25,27 @@ namespace patch
     };
 
     class Core;
+
+    // This is a trick to provide access to the setId funciton for Core.
+    // No other class should have access to that funciton and it should be called only rarely, in
+    // special cases. I am keeping it private and only letting it be called with a token that only
+    // Core has access to.
+    struct InstanceAccessToken
+    {
+        private:
+        InstanceAccessToken() = default;
+        friend class Core;
+    };
+
+    struct ConnectionParameters
+    {
+        float gain;
+
+        // these are not implemented just yet
+
+        int delay;
+        bool delayCorrection;
+    };
 
     class Instance
     {
@@ -39,8 +60,9 @@ namespace patch
         void setMode(Mode mode);
         Mode getMode() { return mMode; }
         juce::AudioBuffer<float>* getRecieveBuffer() { return &mRecieveBuffer; }
-        void coreFinished() { fCoreState = hasFinished; }
-        int getId() const { return id; }
+        void setCoreFinished() { fCoreState = hasFinished; }
+        const juce::Uuid& getId() const { return id; }
+        void setId(InstanceAccessToken token, const juce::Uuid& uuid) { id = uuid; }
 
     private:
         int maxBufferSize;
@@ -48,11 +70,12 @@ namespace patch
         BinarySateFlag fCoreState = hasNotFinished;
 
         Mode mMode;
+        Mode mPreviousMode;
+
         juce::AudioBuffer<float> mRecieveBuffer;
         Core* mCorePtr;
 
-        inline static int gCounter = 1;
-        const int id;
+        juce::Uuid id;
 
         inline static juce::CriticalSection mcs = {};
     };

@@ -13,8 +13,6 @@
 
 namespace patch
 {
-    class Instance;
-
     // there are way better methods to do this, but atm im just trying to get
     // it to work somehow
     struct MCCBuffer
@@ -53,29 +51,44 @@ namespace patch
         int mNumberOfSamples;
     };
 
+    template<class T> using Map = std::unordered_map<juce::Uuid, T>;
+    using ParameterVector = Map<ConnectionParameters>;
+    using ParameterMatrix = Map<ParameterVector>;
+
     class Core : public Singleton<Core>
     {
     public:
         void registerInstance(Instance* ptr);
-        void tryDeleteInstance(Instance* ptr);
+        void tryDeleteInstance(const juce::Uuid& id);
 
         void prepareToPlay(double sampleRate, int samplesPerBlock);
         void processRouting(int incomingSize);
         void releaseResources();
+        void instanceSwitchedMode(Instance* ptr, Mode previousMode);
 
-        void bufferForNextBlock(juce::AudioBuffer<float>& buffer);
+        void bufferForNextBlock(juce::Uuid id, juce::AudioBuffer<float>& buffer);
 
     private:
-        std::vector<Instance*> mInstances;
+        bool checkForUuidMatch(const juce::Uuid& id);
+
+        Map<Instance*> mBypassedInstances;
+        Map<Instance*> mRecieverInstances;
+        Map<Instance*> mTransmitterInstances;
 
         int mMaxBufferSize;
         double mSampleRate;
         int mTransitLength = 0;
 
-        // im not sure just yet how this is going to work, but this buffer is a
-        // temporary for sure
-        juce::AudioBuffer<float> mTransitBuffer;
-        MCCBuffer mDelayBuffer;
+        // first is DelayBuffer, second is TransmitBuffer
+        using Buffer = std::pair<MCCBuffer, juce::AudioBuffer<float>>;
+        // Belongs to Transmitter Instances
+        Map<Buffer> mBuffers;
+
+        // Map<juce::AudioBuffer<float>> mTransitBuffers;
+        // Map<MCCBuffer> mDelayBuffers;
+
+        // Matrix[Transmitter][Reciever]
+        ParameterMatrix mMatrix;
     };
 
 }
