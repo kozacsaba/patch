@@ -37,8 +37,6 @@ void Core::prepareToPlay(double sampleRate, int samplesPerBlock)
 
 void Core::processRouting(int incomingSize)
 {
-    //MY_LOG_INFO("Core: Pushing {} samples from Transit buffer to Delay buffer",
-    //            mTransitLength);
     for(auto& kv : mBuffers)
     {
         auto& bufferPair = kv.second;
@@ -68,11 +66,6 @@ void Core::processRouting(int incomingSize)
     {
         instkv.second->setCoreFinished();
 
-        //MY_LOG_INFO("Core: Sending {} samples to instance {}",
-        //    incomingSize,
-        //    inst->getId());
-
-
         // Processing Parameters should be implemented
         for (int ch = 0; ch < 2; ch++)
         {
@@ -83,8 +76,6 @@ void Core::processRouting(int incomingSize)
             }
         }
     }
-
-    MY_LOG_INFO("Core: Finished routing");
 }
 
 void Core::releaseResources() 
@@ -112,9 +103,8 @@ void Core::instanceSwitchedMode(Instance* ptr, Mode previousMode)
         case Mode::bypass :
             mBypassedInstances.erase(ptr->getId());
         default :
+            break;
     }
-
-    ParameterVector vector{};
 
     switch(ptr->getMode())
     {
@@ -126,7 +116,8 @@ void Core::instanceSwitchedMode(Instance* ptr, Mode previousMode)
             for (auto& parameterVectorKv : mMatrix)
             {
                 auto& parameterVector = parameterVectorKv.second;
-                parameterVector.emplace(ptr->getId(), ConnectionParameters{});
+                parameterVector.emplace(ptr->getId(), 
+                                        std::make_unique<ConnectionParameters>());
             }
             break;
         case Mode::transmit :
@@ -136,12 +127,14 @@ void Core::instanceSwitchedMode(Instance* ptr, Mode previousMode)
                 vector.reserve(mRecieverInstances.size());
                 for(auto& recieverkv : mRecieverInstances)
                 {
-                    vector.emplace(recieverkv.first, ConnectionParameters{});
+                    vector.emplace (recieverkv.first, 
+                                    std::make_unique<ConnectionParameters>());
                 }
                 mMatrix.emplace(ptr->getId(), std::move(vector));
             }
             break;
         default :
+            break;
     }
 }
 
@@ -149,10 +142,6 @@ void Core::instanceSwitchedMode(Instance* ptr, Mode previousMode)
 void Core::bufferForNextBlock(juce::Uuid id, juce::AudioBuffer<float>& buffer)
 {
     mTransitLength = buffer.getNumSamples();
-
-    MY_LOG_INFO("Core: Recieved {} samples from buffer {}",
-                id.toString(),
-                mTransitLength);
 
     for (int ch = 0; ch < 2; ch++)
     {
@@ -172,4 +161,9 @@ bool Core::checkForUuidMatch(const juce::Uuid& id)
     if(mRecieverInstances.contains(id)) return true;
 
     return false;
+}
+
+ConnectionParameters* Core::getConnectionParameters(juce::Uuid transmitter, juce::Uuid reciever)
+{
+    return mMatrix[transmitter][reciever].get();
 }

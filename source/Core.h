@@ -10,6 +10,7 @@
 #include "CircularArray.h"
 #include "Singleton.h"
 #include "Instance.h"
+#include "ConnectionParameters.h"
 
 namespace patch
 {
@@ -52,7 +53,7 @@ namespace patch
     };
 
     template<class T> using Map = std::unordered_map<juce::Uuid, T>;
-    using ParameterVector = Map<ConnectionParameters>;
+    using ParameterVector = Map<std::unique_ptr<ConnectionParameters>>;
     using ParameterMatrix = Map<ParameterVector>;
 
     class Core : public Singleton<Core>
@@ -67,6 +68,10 @@ namespace patch
         void instanceSwitchedMode(Instance* ptr, Mode previousMode);
 
         void bufferForNextBlock(juce::Uuid id, juce::AudioBuffer<float>& buffer);
+
+        Map<Instance*>* getRecievers() {return &mRecieverInstances;}
+        Map<Instance*>* getTransmitters() {return &mTransmitterInstances;}
+        ConnectionParameters* getConnectionParameters(juce::Uuid transmitter, juce::Uuid reciever);
 
     private:
         bool checkForUuidMatch(const juce::Uuid& id);

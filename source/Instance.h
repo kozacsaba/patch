@@ -5,8 +5,10 @@
 
 #pragma once
 
-#include "Core.h"
+#include "juce_audio_basics/juce_audio_basics.h"
+
 #include "CircularArray.h"
+#include "ConnectionParameters.h"
 
 namespace patch
 {
@@ -37,16 +39,6 @@ namespace patch
         friend class Core;
     };
 
-    struct ConnectionParameters
-    {
-        float gain;
-
-        // these are not implemented just yet
-
-        int delay;
-        bool delayCorrection;
-    };
-
     class Instance
     {
     public:
@@ -58,11 +50,14 @@ namespace patch
         void releaseResources();
 
         void setMode(Mode mode);
+        void setCoreFinished() { fCoreState = hasFinished; }
+        void setId(InstanceAccessToken token, const juce::Uuid& uuid);
+        void setName(juce::String name) {mName = name;}
+
         Mode getMode() { return mMode; }
         juce::AudioBuffer<float>* getRecieveBuffer() { return &mRecieveBuffer; }
-        void setCoreFinished() { fCoreState = hasFinished; }
         const juce::Uuid& getId() const { return id; }
-        void setId(InstanceAccessToken token, const juce::Uuid& uuid) { id = uuid; }
+        juce::String getName() const;
 
     private:
         int maxBufferSize;
@@ -76,6 +71,7 @@ namespace patch
         Core* mCorePtr;
 
         juce::Uuid id;
+        std::optional<juce::String> mName;
 
         inline static juce::CriticalSection mcs = {};
     };

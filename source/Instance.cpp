@@ -1,5 +1,6 @@
 #include "Instance.h"
 #include "Logger.h"
+#include "Core.h"
 
 using namespace patch;
 
@@ -78,4 +79,15 @@ void Instance::setMode(Mode mode)
     mMode = mode;
     mCorePtr->instanceSwitchedMode(this, mPreviousMode);
     mPreviousMode = mMode;
+}
+
+void Instance::setId(InstanceAccessToken token, const juce::Uuid& uuid)
+{
+    juce::ignoreUnused(token); 
+    id = uuid;
+}
+
+juce::String Instance::getName() const
+{
+    return mName.value_or<juce::String>(id.toString());
 }
