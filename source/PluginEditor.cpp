@@ -38,7 +38,9 @@ void InstanceListModel::paintListBoxItem
             return;
     }
 
-    const bool isConnected = parameters->gain > 0.f;
+    const bool isConnected = parameters 
+        ? parameters->gain > 0.f
+        : false;
 
     juce::Colour backgroundColor = isConnected 
         ? juce::Colours::lightgreen
@@ -87,7 +89,7 @@ PluginEditor::PluginEditor (PluginProcessor& p)
 {
     addAndMakeVisible(cModeSelectorComboBox);
     cModeSelectorComboBox.addItem("Bypass", (int)Mode::bypass);
-    cModeSelectorComboBox.addItem("Tranmit", (int)Mode::transmit);
+    cModeSelectorComboBox.addItem("Transmit", (int)Mode::transmit);
     cModeSelectorComboBox.addItem("Recieve", (int)Mode::recieve);
     cModeSelectorComboBox.setEditableText(false);
     cModeSelectorComboBox.setSelectedId(
@@ -100,6 +102,7 @@ PluginEditor::PluginEditor (PluginProcessor& p)
 
     addAndMakeVisible(cNameLabel);
     cNameLabel.setText(processorRef.getEndPoint()->getName(), juce::dontSendNotification);
+    cNameLabel.setEditable(true);
     cNameLabel.onTextChange = [this]
     {
         processorRef.getEndPoint()->setName(cNameLabel.getText());
@@ -114,9 +117,10 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     addAndMakeVisible(cConnectionListBox);
     cConnectionListBox.setModel(&mConnectionListBoxModel);
     cConnectionListBox.setMultipleSelectionEnabled(false);
+    cConnectionListBox.setRowHeight(30);
 
     addAndMakeVisible(cGainSlider);
-    cGainSlider.setMinAndMaxValues(0.f, 1.f, juce::dontSendNotification);
+    cGainSlider.setRange(0.f, 1.f);
     cGainSlider.onValueChange = [this]
     {
         if(mConnectionParameters)
@@ -160,10 +164,10 @@ void PluginEditor::modeSwitched()
     switch(mode)
     {
         case Mode::recieve :
-            instanceList = core->getRecievers();
+            instanceList = core->getTransmitters();
             break;
         case Mode::transmit :
-            instanceList = core->getTransmitters();
+            instanceList = core->getRecievers();
             break;
         case Mode::bypass :
         default:
@@ -172,6 +176,7 @@ void PluginEditor::modeSwitched()
 
     processorRef.getEndPoint()->setMode(mode);
 
+    mConnectionListBoxModel.setMode(mode);
     mConnectionListBoxModel.setInstanceList(instanceList);
     cConnectionListBox.updateContent();
     cConnectionListBox.deselectAllRows();

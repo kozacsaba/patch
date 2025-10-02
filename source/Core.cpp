@@ -86,11 +86,13 @@ void Core::releaseResources()
 
 void Core::instanceSwitchedMode(Instance* ptr, Mode previousMode)
 {    
+    // deassign from previous Mode responsibilities
     switch (previousMode)
     {
         case Mode::transmit :
             mTransmitterInstances.erase(ptr->getId());
             mMatrix.erase(ptr->getId());
+            mBuffers.erase(ptr->getId());
             break;
         case Mode::recieve :
             mRecieverInstances.erase(ptr->getId());
@@ -106,6 +108,7 @@ void Core::instanceSwitchedMode(Instance* ptr, Mode previousMode)
             break;
     }
 
+    // assign to new Mode responsibilities
     switch(ptr->getMode())
     {
         case Mode::bypass :
@@ -131,6 +134,11 @@ void Core::instanceSwitchedMode(Instance* ptr, Mode previousMode)
                                     std::make_unique<ConnectionParameters>());
                 }
                 mMatrix.emplace(ptr->getId(), std::move(vector));
+            
+                Buffer transmitterBufferPair = {MCCBuffer(), juce::AudioBuffer<float>()};
+                transmitterBufferPair.first.setSize(2 /*hardcoded for now*/, mMaxBufferSize);
+                transmitterBufferPair.second.setSize(2 /*hardcoded for now*/, mMaxBufferSize);
+                mBuffers.emplace(ptr->getId(), std::move(transmitterBufferPair));
             }
             break;
         default :
