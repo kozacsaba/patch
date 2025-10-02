@@ -52,29 +52,36 @@ void Core::processRouting(int incomingSize)
 
     mTransitLength = 0;
 
-    for (auto instkv : mBypassedInstances)
+    for (auto& instkv : mBypassedInstances)
     {
         instkv.second->setCoreFinished();
     }
 
-    for (auto instkv : mRecieverInstances)
+    for (auto& instkv : mRecieverInstances)
     {
         instkv.second->setCoreFinished();
+
+        for(auto& bufferkv : mBuffers)
+        {
+            const auto& transmitterId = bufferkv.first;
+            // Processing Parameters should be implemented
+            
+            const auto& bufferPair = bufferkv.second;
+
+            for (int ch = 0; ch < 2; ch++)
+            {
+                for (ptrdiff_t s = 0; s < incomingSize; s++)
+                {
+                    float sample = bufferPair.first.getChannel(ch)->operator[](s);
+                    instkv.second->getRecieveBuffer()->setSample(ch, (int)s, sample);
+                }
+            }
+        }
     }
 
     for (auto instkv : mTransmitterInstances)
     {
         instkv.second->setCoreFinished();
-
-        // Processing Parameters should be implemented
-        for (int ch = 0; ch < 2; ch++)
-        {
-            for (ptrdiff_t s = 0; s < incomingSize; s++)
-            {
-                float sample = mBuffers[instkv.first].first.getChannel(ch)->operator[](s);
-                instkv.second->getRecieveBuffer()->setSample(ch, (int)s, sample);
-            }
-        }
     }
 }
 
