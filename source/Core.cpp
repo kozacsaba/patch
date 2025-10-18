@@ -70,8 +70,13 @@ void Core::processRouting(int incomingSize)
 
         for(auto& bufferkv : mBuffers)
         {
-            // const auto& transmitterId = bufferkv.first;
-            // Processing Parameters should be implemented
+            const juce::Uuid& transmitterId = bufferkv.first;
+            const juce::Uuid& recieverId = instkv.first;
+            const ConnectionParameters* params = getConnectionParameters(transmitterId, recieverId);
+            const bool isConnected = params->on.getValue();
+            if(!isConnected) continue;
+
+            const float gain = params->gain.getValue();
             
             const auto& bufferPair = bufferkv.second;
 
@@ -80,6 +85,7 @@ void Core::processRouting(int incomingSize)
                 for (ptrdiff_t s = 0; s < incomingSize; s++)
                 {
                     float sample = bufferPair.first.getChannel(ch)->operator[](s);
+                    sample *= gain;
                     instkv.second->getRecieveBuffer()->setSample(ch, (int)s, sample);
                 }
             }

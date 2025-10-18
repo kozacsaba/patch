@@ -2,6 +2,7 @@
 #include "juce_gui_basics/juce_gui_basics.h"
 #include <vector>
 #include <type_traits>
+#include <atomic>
 
 namespace patch
 {
@@ -11,6 +12,8 @@ enum class OverdriveProtection
     off,
     clip
 };
+
+// PatchToggleButton
 
 class PatchToggleButton
 {
@@ -70,6 +73,8 @@ private:
     std::vector<Listener*> listeners;
 };
 
+// ToggleParameter
+
 class ToggleParameter : public PatchToggleButton::Listener
 {
 public:
@@ -90,7 +95,7 @@ public:
     {
         buttonToAttach->addListener(this);
         buttons.push_back(buttonToAttach);
-        buttonToAttach->setState(value, juce::dontSendNotification);
+        buttonToAttach->setState(value.load(std::memory_order_relaxed), juce::dontSendNotification);
     }
 
     void detachToggleButton(PatchToggleButton* buttonToDetach)
@@ -104,21 +109,22 @@ public:
 
     void toggleStateChanged(PatchToggleButton* emitter)
     {
-        value = emitter->getState();
+        bool valueToSet = emitter->getState();
+        value.store(valueToSet);
         for(auto button : buttons)
         {
-            button->setState(value, juce::dontSendNotification);
+            button->setState(valueToSet, juce::dontSendNotification);
         }
     }
 
-    bool getValue() { return value; }
+    bool getValue() const { return value.load(std::memory_order_relaxed); }
 
     void setValue(bool val) 
     {
         value = val;
         for(auto button : buttons)
         {
-            button->setState(value, juce::dontSendNotification);
+            button->setState(val, juce::dontSendNotification);
         }
     }
 
@@ -129,8 +135,10 @@ private:
     }
 
     std::vector<PatchToggleButton*> buttons;
-    bool value;
+    std::atomic_bool value;
 };
+
+// SliderParameter
 
 template<typename type = float>
     requires std::is_floating_point_v<type>
@@ -154,7 +162,7 @@ public:
     {
         sliderToAttach->addListener(this);
         sliders.push_back(sliderToAttach);
-        sliderToAttach->setValue(value, juce::dontSendNotification);
+        sliderToAttach->setValue((double)value.load(std::memory_order_relaxed), juce::dontSendNotification);
     }
 
     void detachSlider(juce::Slider* sliderToDetach)
@@ -168,21 +176,22 @@ public:
 
     void sliderValueChanged(juce::Slider* emitter) override
     {
-        value = (type)emitter->getValue();
+        type valueToSet = (type)emitter->getValue();
+        value.store(valueToSet);
         for(auto slider : sliders)
         {
-            slider->setValue((double)value, juce::dontSendNotification);
+            slider->setValue((double)valueToSet, juce::dontSendNotification);
         }
     }
 
-    type getValue() { return value; }
+    type getValue() const { return value.load(std::memory_order_relaxed); }
 
     void setValue(type val)
     {
-        value = val;
+        value.store(val);
         for(auto slider : sliders)
         {
-            slider->setValue((double)value, juce::dontSendNotification);
+            slider->setValue((double)val, juce::dontSendNotification);
         }
     }
 
@@ -197,8 +206,10 @@ private:
     }
 
     std::vector<juce::Slider*> sliders;
-    type value;
+    std::atomic<type> value;
 };
+
+// ComboBoxParameter
 
 template<typename Enum>
     requires std::is_enum_v<Enum>
@@ -222,7 +233,7 @@ public:
     {
         comboBoxes.push_back(comboBoxToAttach);
         comboBoxToAttach->addListener(this);
-        comboBoxToAttach->setSelectedId((int)value, juce::dontSendNotification);
+        comboBoxToAttach->setSelectedId((int)value.load(std::memory_order_relaxed), juce::dontSendNotification);
     }
 
     void detachComboBox(juce::ComboBox* comboBoxToDetach)
@@ -236,21 +247,22 @@ public:
 
     void comboBoxChanged (juce::ComboBox *comboBoxThatHasChanged) override
     {
-        value = (Enum)comboBoxThatHasChanged->getSelectedId();
+        Enum valueToSet = (Enum)comboBoxThatHasChanged->getSelectedId();
+        value.store(valueToSet);
         for(auto comboBox : comboBoxes)
         {
-            comboBox->setSelectedId((int)value);
+            comboBox->setSelectedId((int)valueToSet);
         }
     }
 
-    Enum getValue() { return value; }
+    Enum getValue() const { return value.load(std::memory_order_relaxed); }
 
     void setValue(Enum val)
     {
-        value = val;
+        value.store(val);
         for(auto comboBox : comboBoxes)
         {
-            comboBox->setSelectedId((int)value, juce::dontSendNotification);
+            comboBox->setSelectedId((int)val, juce::dontSendNotification);
         }
     }
 
@@ -265,7 +277,7 @@ private:
     }
 
     std::vector<juce::ComboBox*> comboBoxes;
-    Enum value;
+    std::atomic<Enum> value;
 };
 
 /*  ConnectionParameters
