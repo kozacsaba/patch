@@ -39,7 +39,7 @@ void InstanceListModel::paintListBoxItem
     }
 
     const bool isConnected = parameters 
-        ? parameters->gain > 0.f
+        ? parameters->gain.getValue() > 0.f
         : false;
 
     juce::Colour backgroundColor = isConnected 
@@ -86,6 +86,7 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     : AudioProcessorEditor (&p)
     , processorRef (p)
     , mConnectionListBoxModel(processorRef.getEndPoint()->getId())
+    , mConnectionParameters(nullptr)
 {
     addAndMakeVisible(cModeSelectorComboBox);
     cModeSelectorComboBox.addItem("Bypass", (int)Mode::bypass);
@@ -99,6 +100,7 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     {
         this->modeSwitched();
     };
+    modeSwitched();
 
     addAndMakeVisible(cNameLabel);
     cNameLabel.setText(processorRef.getEndPoint()->getName(), juce::dontSendNotification);
@@ -112,7 +114,6 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     {
         attachToParameters(otherInstanceId);
     };
-    modeSwitched();
 
     addAndMakeVisible(cConnectionListBox);
     cConnectionListBox.setModel(&mConnectionListBoxModel);
@@ -121,11 +122,8 @@ PluginEditor::PluginEditor (PluginProcessor& p)
 
     addAndMakeVisible(cGainSlider);
     cGainSlider.setRange(0.f, 1.f);
-    cGainSlider.onValueChange = [this]
-    {
-        if(mConnectionParameters)
-            mConnectionParameters->gain = (float)cGainSlider.getValue();
-    };
+
+    addAndMakeVisible(cConnectionButton.button);
 
     setSize (400, 300);
     setResizable(true, true);
@@ -133,6 +131,7 @@ PluginEditor::PluginEditor (PluginProcessor& p)
 
 PluginEditor::~PluginEditor()
 {
+    attachToParameters(juce::Uuid::null());
 }
 
 
@@ -152,6 +151,7 @@ void PluginEditor::resized()
 
     cConnectionListBox.setBounds(area);
 
+    cConnectionButton.button.setBounds(parameterArea.removeFromLeft(30));
     cGainSlider.setBounds(parameterArea);
 }
 
@@ -180,12 +180,23 @@ void PluginEditor::modeSwitched()
     mConnectionListBoxModel.setInstanceList(instanceList);
     cConnectionListBox.updateContent();
     cConnectionListBox.deselectAllRows();
+    cConnectionListBox.repaint();
 
     attachToParameters(juce::Uuid::null());
 }
 
 void PluginEditor::attachToParameters(juce::Uuid otherInstanceId)
 {
+    if(mConnectionParameters)
+    {
+        mConnectionParameters->on.detachToggleButton(&cConnectionButton);
+        mConnectionParameters->gain.detachSlider(&cGainSlider);
+
+        // delay
+        // delayCorrection
+        // protection
+    }
+
     if(otherInstanceId.isNull())
     {
         mConnectionParameters = nullptr;
@@ -209,5 +220,15 @@ void PluginEditor::attachToParameters(juce::Uuid otherInstanceId)
     case Mode::bypass :
     default:
         mConnectionParameters = nullptr;
+    }
+
+    if(mConnectionParameters)
+    {
+        mConnectionParameters->on.attachToggleButton(&cConnectionButton);
+        mConnectionParameters->gain.attachSlider(&cGainSlider);
+
+        // delay
+        // delayCompensation
+        // protection
     }
 }

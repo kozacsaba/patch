@@ -60,7 +60,7 @@ namespace patch
     {
     public:
         void registerInstance(Instance* ptr);
-        void tryDeleteInstance(const juce::Uuid& id);
+        void tryDeleteInstance(juce::Uuid id);
 
         void prepareToPlay(double sampleRate, int samplesPerBlock);
         void processRouting(int incomingSize);
@@ -72,6 +72,7 @@ namespace patch
         Map<Instance*>* getRecievers() {return &mRecieverInstances;}
         Map<Instance*>* getTransmitters() {return &mTransmitterInstances;}
         ConnectionParameters* getConnectionParameters(juce::Uuid transmitter, juce::Uuid reciever);
+        Instance* findInstanceById(juce::Uuid id);
 
     private:
         bool checkForUuidMatch(const juce::Uuid& id);
@@ -94,6 +95,8 @@ namespace patch
 
         // Matrix[Transmitter][Reciever]
         ParameterMatrix mMatrix;
+
+        juce::CriticalSection mBufferOperation;
     };
 
 }

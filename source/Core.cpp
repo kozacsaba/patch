@@ -14,15 +14,20 @@ void Core::registerInstance(Instance* ptr)
     mBypassedInstances.emplace(ptr->getId(), ptr);
 }
 
-void Core::tryDeleteInstance(const juce::Uuid& id)
+void Core::tryDeleteInstance(juce::Uuid id)
 {
+    Instance* instancePtr = findInstanceById(id);
+    if(instancePtr == nullptr) return;
+
+    instancePtr->setMode(Mode::bypass);
+
     mBypassedInstances.erase(id);
-    mTransmitterInstances.erase(id);
-    mRecieverInstances.erase(id);
 }
 
 void Core::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
+    juce::ScopedLock lock(mBufferOperation);
+
     mSampleRate = sampleRate;
     mMaxBufferSize = samplesPerBlock;
 
@@ -37,6 +42,8 @@ void Core::prepareToPlay(double sampleRate, int samplesPerBlock)
 
 void Core::processRouting(int incomingSize)
 {
+    juce::ScopedLock lock(mBufferOperation);
+
     for(auto& kv : mBuffers)
     {
         auto& bufferPair = kv.second;
@@ -63,7 +70,7 @@ void Core::processRouting(int incomingSize)
 
         for(auto& bufferkv : mBuffers)
         {
-            const auto& transmitterId = bufferkv.first;
+            // const auto& transmitterId = bufferkv.first;
             // Processing Parameters should be implemented
             
             const auto& bufferPair = bufferkv.second;
@@ -93,6 +100,10 @@ void Core::releaseResources()
 
 void Core::instanceSwitchedMode(Instance* ptr, Mode previousMode)
 {    
+    juce::ScopedLock lock(mBufferOperation);
+
+    if(previousMode == ptr->getMode()) return;
+
     // deassign from previous Mode responsibilities
     switch (previousMode)
     {
@@ -156,6 +167,8 @@ void Core::instanceSwitchedMode(Instance* ptr, Mode previousMode)
 // Transmitter Instance -> Core
 void Core::bufferForNextBlock(juce::Uuid id, juce::AudioBuffer<float>& buffer)
 {
+    juce::ScopedLock lock(mBufferOperation);
+
     mTransitLength = buffer.getNumSamples();
 
     for (int ch = 0; ch < 2; ch++)
@@ -181,4 +194,17 @@ bool Core::checkForUuidMatch(const juce::Uuid& id)
 ConnectionParameters* Core::getConnectionParameters(juce::Uuid transmitter, juce::Uuid reciever)
 {
     return mMatrix[transmitter][reciever].get();
+}
+
+Instance* Core::findInstanceById(juce::Uuid id)
+{
+    for(auto instancelist : {mBypassedInstances, mTransmitterInstances, mRecieverInstances})
+    {
+        for(auto ptrkv : instancelist)
+        {
+            if(ptrkv.first == id)
+                return ptrkv.second;
+        }
+    }
+    return nullptr;
 }

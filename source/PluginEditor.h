@@ -43,9 +43,11 @@ private:
     juce::ComboBox cModeSelectorComboBox;
     juce::Label cNameLabel;
     juce::ListBox cConnectionListBox;
-    juce::Slider cGainSlider;
 
-    ConnectionParameters* mConnectionParameters;
+    juce::Slider cGainSlider;
+    patch::PatchToggleButton cConnectionButton;
+
+    patch::ConnectionParameters* mConnectionParameters;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PluginEditor)
 };
