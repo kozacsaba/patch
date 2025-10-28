@@ -59,6 +59,8 @@ namespace patch
         const juce::Uuid& getId() const { return id; }
         juce::String getName() const;
 
+        std::function<void()> updateConnectionList;
+
     private:
         int maxBufferSize;
         double fs;

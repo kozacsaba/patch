@@ -39,7 +39,7 @@ void InstanceListModel::paintListBoxItem
     }
 
     const bool isConnected = parameters 
-        ? parameters->gain.getValue() > 0.f
+        ? parameters->on.getValue()
         : false;
 
     juce::Colour backgroundColor = isConnected 
@@ -52,8 +52,9 @@ void InstanceListModel::paintListBoxItem
     g.setColour(backgroundColor);
     g.fillAll();
 
+    auto textArea = juce::Rectangle<int>{0, 0, width, height}.reduced(8, 0);
     g.setColour(juce::Colours::black);
-    g.drawText(elementName, 0, 0, width, height, juce::Justification::centredLeft);
+    g.drawFittedText(elementName, textArea, juce::Justification::centredLeft, 1);
 }
 
 void InstanceListModel::listBoxItemClicked (int row, const juce::MouseEvent& event)
@@ -108,6 +109,11 @@ PluginEditor::PluginEditor (PluginProcessor& p)
     cNameLabel.onTextChange = [this]
     {
         processorRef.getEndPoint()->setName(cNameLabel.getText());
+        Mode mode = processorRef.getEndPoint()->getMode();
+        if(mode == Mode::transmit)
+            Core::getInstance()->updateConnectionList(Mode::recieve);
+        if(mode == Mode::recieve)
+            Core::getInstance()->updateConnectionList(Mode::transmit);
     };
 
     mConnectionListBoxModel.onInstanceSelected = [this](juce::Uuid otherInstanceId)
@@ -122,8 +128,29 @@ PluginEditor::PluginEditor (PluginProcessor& p)
 
     addAndMakeVisible(cGainSlider);
     cGainSlider.setRange(0.f, 1.f);
+    cGainSlider.setNumDecimalPlacesToDisplay(2);
 
     addAndMakeVisible(cConnectionButton.button);
+    cConnectionButton.addCallback([this]()
+    {
+        updateInstanceList();
+        Mode mode = processorRef.getEndPoint()->getMode();
+        if(mode == Mode::transmit)
+            Core::getInstance()->updateConnectionList(Mode::recieve);
+        if(mode == Mode::recieve)
+            Core::getInstance()->updateConnectionList(Mode::transmit);
+    });
+    cConnectionButton.addCallback([this]()
+    {
+        const bool on = cConnectionButton.getState();
+        cGainSlider.setEnabled(on);
+    }
+    );
+
+    processorRef.getEndPoint()->updateConnectionList = [this]()
+    {
+        updateInstanceList();
+    };
 
     setSize (400, 300);
     setResizable(true, true);
@@ -132,6 +159,7 @@ PluginEditor::PluginEditor (PluginProcessor& p)
 PluginEditor::~PluginEditor()
 {
     attachToParameters(juce::Uuid::null());
+    processorRef.getEndPoint()->updateConnectionList = nullptr;
 }
 
 
@@ -143,10 +171,10 @@ void PluginEditor::paint (juce::Graphics& g)
 void PluginEditor::resized()
 {
     auto area = getBounds();
-    auto topArea = area.removeFromTop(area.proportionOfHeight(0.2f));
-    auto parameterArea = area.removeFromBottom(area.proportionOfHeight(0.2f));
+    auto topArea = area.removeFromTop(area.proportionOfHeight(0.07f));
+    auto parameterArea = area.removeFromBottom(area.proportionOfHeight(0.1f));
 
-    cNameLabel.setBounds(topArea.removeFromLeft(area.proportionOfHeight(0.5f)));
+    cNameLabel.setBounds(topArea.removeFromLeft(area.proportionOfWidth(0.5f)));
     cModeSelectorComboBox.setBounds(topArea);
 
     cConnectionListBox.setBounds(area);
@@ -183,10 +211,14 @@ void PluginEditor::modeSwitched()
     cConnectionListBox.repaint();
 
     attachToParameters(juce::Uuid::null());
+
+    cGainSlider.setEnabled(false);
 }
 
 void PluginEditor::attachToParameters(juce::Uuid otherInstanceId)
 {
+    cGainSlider.setEnabled(false);
+
     if(mConnectionParameters)
     {
         mConnectionParameters->on.detachToggleButton(&cConnectionButton);
@@ -210,10 +242,12 @@ void PluginEditor::attachToParameters(juce::Uuid otherInstanceId)
     switch (mode)
     {
     case Mode::transmit :
+        cGainSlider.setEnabled(true);
         mConnectionParameters = Core::getInstance()
             ->getConnectionParameters(id, otherInstanceId);
         break;
     case Mode::recieve :
+        cGainSlider.setEnabled(true);
         mConnectionParameters = Core::getInstance()
             ->getConnectionParameters(otherInstanceId, id);
         break;
@@ -231,4 +265,10 @@ void PluginEditor::attachToParameters(juce::Uuid otherInstanceId)
         // delayCompensation
         // protection
     }
+}
+
+void PluginEditor::updateInstanceList()
+{
+    cConnectionListBox.updateContent();
+    cConnectionListBox.repaint();
 }

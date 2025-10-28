@@ -17,6 +17,7 @@ Instance::Instance()
 
 Instance::~Instance() 
 {
+    juce::ScopedLock lock(mcs);
     mCorePtr->tryDeleteInstance(getId());
 }
 

@@ -3,6 +3,7 @@
 #include <vector>
 #include <type_traits>
 #include <atomic>
+#include <functional>
 
 namespace patch
 {
@@ -20,19 +21,32 @@ class PatchToggleButton
 public:
     PatchToggleButton()
     {
-        button.onStateChange = [this]()
+        button.onClick = [this]()
+        {
+            for(auto& callback : callbacks)
+            {
+                callback();
+            }
+        };
+
+        addCallback([this]()
         {
             for(auto listener : listeners)
             {
                 listener->toggleStateChanged(this);
             }
-        };
+        });
     }
 
     ~PatchToggleButton()
     {
         button.onStateChange = nullptr;
         removeAllListeners();
+    }
+
+    void addCallback(std::function<void()> callback)
+    {
+        callbacks.emplace_back(callback);
     }
 
     bool getState() { return button.getToggleState(); }
@@ -42,6 +56,7 @@ public:
         button.setToggleState(state, sendNotifications); 
     }
 
+    // DO NOT MESS WITH onStateChange FROM OUTSIDE THIS CLASS
     juce::ToggleButton button;
 
     class Listener
@@ -71,6 +86,7 @@ private:
     }
 
     std::vector<Listener*> listeners;
+    std::vector<std::function<void()>> callbacks;
 };
 
 // ToggleParameter

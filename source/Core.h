@@ -73,6 +73,7 @@ namespace patch
         Map<Instance*>* getTransmitters() {return &mTransmitterInstances;}
         ConnectionParameters* getConnectionParameters(juce::Uuid transmitter, juce::Uuid reciever);
         Instance* findInstanceById(juce::Uuid id);
+        void updateConnectionList(Mode mode);
 
     private:
         bool checkForUuidMatch(const juce::Uuid& id);

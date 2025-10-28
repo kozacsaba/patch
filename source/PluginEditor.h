@@ -34,6 +34,7 @@ public:
     
     void modeSwitched();
     void attachToParameters(juce::Uuid otherInstanceId);
+    void updateInstanceList();
 
 private:
     PluginProcessor& processorRef;

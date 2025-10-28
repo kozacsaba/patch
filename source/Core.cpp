@@ -117,6 +117,7 @@ void Core::instanceSwitchedMode(Instance* ptr, Mode previousMode)
             mTransmitterInstances.erase(ptr->getId());
             mMatrix.erase(ptr->getId());
             mBuffers.erase(ptr->getId());
+            updateConnectionList(Mode::recieve);
             break;
         case Mode::recieve :
             mRecieverInstances.erase(ptr->getId());
@@ -125,6 +126,7 @@ void Core::instanceSwitchedMode(Instance* ptr, Mode previousMode)
                 auto& parameterVector = parameterVectorKv.second;
                 parameterVector.erase(ptr->getId());
             }
+            updateConnectionList(Mode::transmit);
             break;
         case Mode::bypass :
             mBypassedInstances.erase(ptr->getId());
@@ -146,6 +148,7 @@ void Core::instanceSwitchedMode(Instance* ptr, Mode previousMode)
                 parameterVector.emplace(ptr->getId(), 
                                         std::make_unique<ConnectionParameters>());
             }
+            updateConnectionList(Mode::transmit);
             break;
         case Mode::transmit :
             mTransmitterInstances.emplace(ptr->getId(), ptr);
@@ -164,6 +167,7 @@ void Core::instanceSwitchedMode(Instance* ptr, Mode previousMode)
                 transmitterBufferPair.second.setSize(2 /*hardcoded for now*/, mMaxBufferSize);
                 mBuffers.emplace(ptr->getId(), std::move(transmitterBufferPair));
             }
+            updateConnectionList(Mode::recieve);
             break;
         default :
             break;
@@ -213,4 +217,30 @@ Instance* Core::findInstanceById(juce::Uuid id)
         }
     }
     return nullptr;
+}
+
+void Core::updateConnectionList(Mode mode)
+{
+    switch(mode)
+    {
+        case Mode::recieve :
+            for(auto ptrkv : mRecieverInstances)
+            {
+                auto func = ptrkv.second->updateConnectionList;
+                if(func)
+                    func();
+            }
+            return;
+        case Mode::transmit :
+            for(auto ptrkv : mTransmitterInstances)
+            {
+                auto func = ptrkv.second->updateConnectionList;
+                if(func)
+                    func();
+            }
+            return;
+        case Mode::bypass :
+        default:
+            return;
+    }
 }

@@ -16,4 +16,6 @@
   - segfault instancelist-ből kiválasztásnál (amikor már elv. ki van választva)
 
 * parameter csatlakozás megvan. instance list nem updatel nagyon sok mindenre...
+
+* okay, mostmár nem crashel a dtor, de még mindig nem frissül helyesen az instance list
   
