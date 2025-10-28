@@ -53,11 +53,13 @@ namespace patch
         void setCoreFinished() { fCoreState = hasFinished; }
         void setId(InstanceAccessToken token, const juce::Uuid& uuid);
         void setName(juce::String name) {mName = name;}
+        void setStateInfo(juce::ValueTree info);
 
         Mode getMode() { return mMode; }
         juce::AudioBuffer<float>* getRecieveBuffer() { return &mRecieveBuffer; }
         const juce::Uuid& getId() const { return id; }
         juce::String getName() const;
+        juce::ValueTree getStateInfo();
 
         std::function<void()> updateConnectionList;
 

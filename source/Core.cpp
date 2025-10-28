@@ -5,7 +5,7 @@ using namespace patch;
 
 void Core::registerInstance(Instance* ptr)
 {
-    if(checkForUuidMatch(ptr->getId()))
+    while(checkForUuidMatch(ptr->getId()))
     {
         juce::Uuid id;
         ptr->setId(InstanceAccessToken{}, id);
@@ -165,6 +165,7 @@ void Core::instanceSwitchedMode(Instance* ptr, Mode previousMode)
                 Buffer transmitterBufferPair = {MCCBuffer(), juce::AudioBuffer<float>()};
                 transmitterBufferPair.first.setSize(2 /*hardcoded for now*/, mMaxBufferSize);
                 transmitterBufferPair.second.setSize(2 /*hardcoded for now*/, mMaxBufferSize);
+                transmitterBufferPair.second.clear();
                 mBuffers.emplace(ptr->getId(), std::move(transmitterBufferPair));
             }
             updateConnectionList(Mode::recieve);
@@ -203,6 +204,8 @@ bool Core::checkForUuidMatch(const juce::Uuid& id)
 
 ConnectionParameters* Core::getConnectionParameters(juce::Uuid transmitter, juce::Uuid reciever)
 {
+    if(!mMatrix.contains(transmitter)) return nullptr;
+    if(!mMatrix[transmitter].contains(reciever)) return nullptr;
     return mMatrix[transmitter][reciever].get();
 }
 

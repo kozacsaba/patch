@@ -296,6 +296,23 @@ private:
     std::atomic<Enum> value;
 };
 
+namespace id
+{
+    using id = const juce::Identifier;
+
+    id stateInfo = "State Information";
+    id connection = "Connection Information";
+    id uuid = "UUID";
+    id mode = "Mode";
+    id name = "Name";
+    
+    id on = "Parameter On";
+    id gain = "Parameter Gain";
+    id delay = "Parameter Delay";
+    id delayCorr = "Parameter Delay Correction";
+    id prot = "Parameter Overdrive Protection";
+}
+
 /*  ConnectionParameters
     This struct shoule be used to describe the conneciton between a Transmitter
     instance and a Reciever instance.
@@ -310,6 +327,27 @@ struct ConnectionParameters
     int delay = 0;
     ToggleParameter delayCorrection = false;
     ComboBoxParameter<OverdriveProtection> protection = OverdriveProtection::off;
+
+    juce::ValueTree serialize()
+    {
+        juce::ValueTree info(id::connection);
+        info.setProperty(id::on, on.getValue(), nullptr);
+        info.setProperty(id::gain, gain.getValue(), nullptr);
+        info.setProperty(id::delay, delay, nullptr);
+        info.setProperty(id::delayCorr, delayCorrection.getValue(), nullptr);
+        info.setProperty(id::prot, (int)protection.getValue(), nullptr);
+
+        return info;
+    }
+
+    void deserialize(juce::ValueTree info)
+    {
+        on.setValue(info.getProperty(id::on));
+        gain.setValue(info.getProperty(id::gain));
+        delay = info.getProperty(id::delay);
+        delayCorrection.setValue(info.getProperty(id::delayCorr));
+        protection.setValue((OverdriveProtection)(int)info.getProperty(id::prot));
+    }
 };
 
 } // namespace patch
