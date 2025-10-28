@@ -14,6 +14,7 @@ PluginProcessor::PluginProcessor()
     juce::ignoreUnused(logger);
 #endif
 }
+
 PluginProcessor::~PluginProcessor()
 {
 }
@@ -23,10 +24,12 @@ void PluginProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     mEndpoint->prepareToPlay(sampleRate, samplesPerBlock);
 }
+
 void PluginProcessor::releaseResources()
 {
     mEndpoint->releaseResources();
 }
+
 bool PluginProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
     // this version only supports 2 channel stereo
@@ -35,6 +38,7 @@ bool PluginProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
         return false;
     return true;
 }
+
 void PluginProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                                               juce::MidiBuffer& midiMessages)
 {
@@ -53,14 +57,18 @@ juce::AudioProcessorEditor* PluginProcessor::createEditor()
 }
 
 
-// I will have to figure out how presets would make sense
 void PluginProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
-    juce::ignoreUnused (destData);
+    juce::MemoryOutputStream output(destData, false);
+    juce::ValueTree info = getEndPoint()->getStateInfo();
+    info.writeToStream(output);
 }
+
 void PluginProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
-    juce::ignoreUnused (data, sizeInBytes);
+    juce::MemoryInputStream input(data, (size_t)sizeInBytes, false);
+    juce::ValueTree info = juce::ValueTree::readFromStream(input);
+    getEndPoint()->setStateInfo(info);
 }
 
 
