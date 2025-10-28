@@ -139,6 +139,7 @@ PluginEditor::PluginEditor (PluginProcessor& p)
             Core::getInstance()->updateConnectionList(Mode::recieve);
         if(mode == Mode::recieve)
             Core::getInstance()->updateConnectionList(Mode::transmit);
+        processorRef.getEndPoint()->getRecieveBuffer()->clear();
     });
     cConnectionButton.addCallback([this]()
     {

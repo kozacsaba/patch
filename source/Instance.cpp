@@ -63,7 +63,7 @@ void Instance::processBlock(juce::AudioBuffer<float>& buffer)
                      buffer.getNumSamples());
         for (int ch = 0; ch < 2; ch++)
         {
-            buffer.copyFrom (
+            buffer.addFrom(
                 ch,
                 0,
                 mRecieveBuffer.getReadPointer(ch),
@@ -80,6 +80,8 @@ void Instance::setMode(Mode mode)
     mMode = mode;
     mCorePtr->instanceSwitchedMode(this, mPreviousMode);
     mPreviousMode = mMode;
+
+    mRecieveBuffer.clear();
 }
 
 void Instance::setId(InstanceAccessToken token, const juce::Uuid& uuid)
